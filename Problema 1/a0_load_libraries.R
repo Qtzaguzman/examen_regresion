@@ -1,0 +1,7 @@
+library(gstat)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(spdep)
+library(pls)
+library(caret)

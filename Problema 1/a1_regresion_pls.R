@@ -1,11 +1,6 @@
 #Cargar librerias
-library(gstat)
-library(ggplot2)
-library(dplyr)
-library(tidyr)
-library(spdep)
-library(pls)
-library(caret)
+load <- c("gstat", "ggplot2", "dplyr", "tidyr", "spdep", "pls", "caret")
+lapply(load, require, character.only = TRUE)
 
 #Establecer el directorio activo
 setwd("~/Home/Codes/Cuatrimestre_02/AnalisisRegresionModerno/Examen")

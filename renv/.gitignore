@@ -1,0 +1,12 @@
+library/
+local/
+cellar/
+lock/
+python/
+sandbox/
+staging/
+renv/
+**/renv.lock
+.Rproj.user/
+**/examen_regresion.Rproj
+

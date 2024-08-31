@@ -9,3 +9,6 @@ renv/
 .Rproj.user/
 .Apoyo/
 
+Apoyo/01 Problema PLS.R
+Apoyo/02 Problema GAM-RF.R
+.DS_Store

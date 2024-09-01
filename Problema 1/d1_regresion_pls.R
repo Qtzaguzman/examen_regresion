@@ -1,3 +1,11 @@
+# Información: PLS con variables categóricas =================================
+ 
+  # Regresión PLS que incluye variable categorica Species como predictor 
+  # Variables respuesta: N_g_m2
+  # Variables predictoras: Wave_500 , …, Wave_2400
+
+
+
 # Cargar librerias =====================================
 
   cargar = TRUE
@@ -18,9 +26,6 @@
   head(datos)
   str(datos)
   set.seed(3456)
-
-  # Variables respuesta: N_g_m2
-  # Variables predictoras: Wave_500 , …, Wave_2400
 
 
 
@@ -68,7 +73,7 @@
   p <- ggplot(datos_predicciones, aes(x = Observado, y = Y.5.comps)) +
     geom_point() +
     geom_abline(intercept = 0, slope = 1, color = "red") +
-    labs(title = ": Predicciones vs Observaciones", x = "Observado", y = "Y.5.comps")
+    labs(title = "N_g_m2: Predicciones vs Observaciones", x = "Observado", y = "Y.5.comps")
 
   print(p)
 

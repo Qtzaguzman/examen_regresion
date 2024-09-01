@@ -7,7 +7,7 @@
 
 
 # Cargar librerias =====================================
-
+  
   load <- c("gstat", "ggplot2", "dplyr", "tidyr", "spdep", "pls", "caret")
   lapply(load, require, character.only = TRUE)
 
@@ -38,12 +38,12 @@
 # Ajustar modelo PLS ===================================
 
   # Definir las variables de respuesta
-  variables <- c("C_N_mass", "C_g_m2", "H20_g_m2", "LMA_g_m2", "N_g_m2", "Species_Code")
+  variables <- c("C_N_mass", "C_g_m2", "H20_g_m2", "LMA_g_m2", "N_g_m2")
   Y <- as.matrix(datos[, variables])
 
-  # Definir las variables predictoras
-  X <- as.matrix(datos[, grep("^Wave_", names(datos))])
-
+  # Definir las variables predictoras incluyendo 'Species_Code'
+  X <- as.matrix(datos[, c("Species_Code", grep("^Wave_", names(datos), value = TRUE))])  
+  
   # Ajustar el modelo de regresión PLS considerando 5 componentes y escalando
   modelo_pls <- plsr(Y ~ X, ncomp = 5, scale = TRUE, validation = "CV")
 

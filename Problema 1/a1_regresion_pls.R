@@ -1,3 +1,11 @@
+# Información: PLS con variables categóricas =================================
+ 
+  # Regresión PLS que incluye variable categorica Species como predictor 
+  # Variables respuesta: C_N_mass, C_g_m2, H20_g_m2, LMA_g_m2, N_g_m2
+  # Variables predictoras: Wave_500 , …, Wave_2400
+
+
+
 # Cargar librerias =====================================
 
   load <- c("gstat", "ggplot2", "dplyr", "tidyr", "spdep", "pls", "caret")

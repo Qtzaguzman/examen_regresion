@@ -23,13 +23,13 @@ if(instalar) {
 load = FALSE
 if(load) {
     library(gstat)
+    library(raster)
     library(ggplot2)
     library(dplyr)
     library(tidyr)
     library(spdep)
     library(pls)
     library(caret)
-    library(raster)
     library(rgdal)
     library(rgeos)
     library(sp)

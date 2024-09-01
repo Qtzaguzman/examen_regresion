@@ -15,6 +15,7 @@
 
   # Establecer el directorio activo
   setwd("~/Projects/examen_regresion/Problema 1")
+  
 
 
 
@@ -25,6 +26,9 @@
   head(datos)
   str(datos)
   set.seed(3456)
+  
+  #Reclasificar la variable Species_Code a Numeros enteros
+  datos$Species_Code <- as.numeric(as.factor(datos$Species_Code))
 
   # Convertir la variable Species_Code a factor
   datos$Species_Code <- as.factor(datos$Species_Code)

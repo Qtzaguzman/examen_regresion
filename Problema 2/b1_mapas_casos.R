@@ -68,10 +68,10 @@
 
   # Crear el mapa de casos por año
   graficar = TRUE
-  if (graficar == TRUE) {
+  if (graficar) {
     ggplot(ohio_map_data) +
       geom_sf(aes(fill = rate)) +                                                              # Rellenar el mapa con la tasa de mortalidad
-      facet_wrap(~ year, ncol = 7) +                                                           # Crear un panel por cada año
+      facet_wrap(~ year, ncol = 3) +                                                           # Crear un panel por cada año
       scale_fill_gradient(low = "white", high = "red", na.value = "grey50", name = "Casos") +
       labs(title = "Mapa de Mortalidad por Cáncer de Pulmón en Ohio (1968-1988)",
           subtitle = "Tasa de muertes por condado por año",

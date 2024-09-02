@@ -1,6 +1,5 @@
 # Información: Regresion GAM de tasa de mortalidad por condado de cancer de pulmón en Ohio =================================
   # Estudio de la tendencia del riesgo sobre la mortalidad por cáncer de pulmón en Ohio
-  # Mapas de tasas de mortalidad por condados 
   # Variables respuesta: rate = Y/n
   # Variables predictoras: county, year, n
 
@@ -125,6 +124,17 @@
   abline(0, 1, col = "red", lwd = 2)  # Línea de referencia y = x
 
   # Prueba de homocedasticidad de Breusch-Pagan
-  library(lmtest)
   bptest_gam <- bptest(modelo_gam)
   print(bptest_gam)
+
+
+
+# Calculo de coeficiente de determinación R2 ========================================
+
+  # Calcular la proporción de devianza explicada como un pseudo-R^2
+  deviance_explicada <- summary(modelo_gam)$dev.expl
+  pseudo_R2 <- deviance_explicada
+
+  # Mostrar el pseudo-R^2
+  print(paste("Pseudo R^2:", pseudo_R2))
+

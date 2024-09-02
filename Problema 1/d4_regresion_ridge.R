@@ -72,6 +72,6 @@
   r2_ridge <- 1 - sum((Y - predicciones)^2) / sum((Y - mean(Y))^2)
   
   # Mostrar los resultados
-  cat(paste("Lambda óptimo", titulo_regresion, ": "), r2_ridge, "\n")
+cat(paste("R^2 para", titulo_regresion, ": "), r2_ridge, "\n")
 
 

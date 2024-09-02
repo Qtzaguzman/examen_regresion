@@ -2,7 +2,7 @@
   # Estudio de la tendencia del riesgo sobre la mortalidad por cáncer de pulmón en Ohio
   # Mapas de tasas de mortalidad por condados 
   # Variables respuesta: rate = Y/n
-  # Variables predictoras: county, year, n
+  # Variables predictoras: county, year
 
 
 
@@ -93,11 +93,11 @@
 # Modelo de regresión error espacial (Spatial Error Model) ========================================
 
   # Ajustar un modelo de regresión de retardo espacial (Spatial Lag Model)
-  modelo_sar <- lagsarlm(rate ~ year + n, data = ohio_map_data, listw = spat_m_pond)
+  modelo_sar <- lagsarlm(rate ~ year, data = ohio_map_data, listw = spat_m_pond)
   summary(modelo_sar)
 
   # Ajustar un modelo de regresión de error espacial (Spatial Error Model)
-  modelo_sem <- errorsarlm(rate ~ year + n, data = ohio_map_data, listw = spat_m_pond)
+  modelo_sem <- errorsarlm(rate ~ year, data = ohio_map_data, listw = spat_m_pond)
   summary(modelo_sem)
 
 
@@ -105,24 +105,55 @@
 # Análisis de residuales ========================================
 
   # Evaluación de los residuales del modelo de retardo espacial
-  ohio_map_data$res_sar <- residuals(modelo_sar)
-  moran.mc(ohio_map_data$res_sar, spat_m_pond, nsim = 999)
+    ohio_map_data$res_sar <- residuals(modelo_sar)
+    moran.mc(ohio_map_data$res_sar, spat_m_pond, nsim = 999)
+    
+    # Visualización de los residuales del modelo SAR en el mapa
+    ggplot(ohio_map_data) +
+      geom_sf(aes(fill = res_sar)) +
+      theme_minimal() +
+      labs(title = "Residuales del Modelo de Retardo Espacial (SAR)")
 
   # Evaluación de los residuales del modelo de error espacial
-  ohio_map_data$res_sem <- residuals(modelo_sem)
-  moran.mc(ohio_map_data$res_sem, spat_m_pond, nsim = 999)
+    ohio_map_data$res_sem <- residuals(modelo_sem)
+    moran.mc(ohio_map_data$res_sem, spat_m_pond, nsim = 999)
 
-  # Visualización de los residuales del modelo SAR en el mapa
-  ggplot(ohio_map_data) +
-    geom_sf(aes(fill = res_sar)) +
-    theme_minimal() +
-    labs(title = "Residuales del Modelo de Retardo Espacial (SAR)")
-
-  # Visualización de los residuales del modelo SEM en el mapa
-  ggplot(ohio_map_data) +
-    geom_sf(aes(fill = res_sem)) +
-    theme_minimal() +
-    labs(title = "Residuales del Modelo de Error Espacial (SEM)")
+    # Visualización de los residuales del modelo SEM en el mapa
+    ggplot(ohio_map_data) +
+      geom_sf(aes(fill = res_sem)) +
+      theme_minimal() +
+      labs(title = "Residuales del Modelo de Error Espacial (SEM)")
 
 
 
+# Predicción ========================================
+  activar_prediccion = FALSE
+  if (activar_prediccion) {
+    # Predicción con el modelo SAR
+    predicciones_sar <- predict(modelo_sar)
+    
+    # Crear un dataframe con valores observados y predichos
+    comparacion_sar <- data.frame(Observado = ohio_map_data$rate, Predicho = predicciones_sar)
+
+    # Gráfico de valores observados vs predichos para SAR
+    plot(comparacion_sar$Observado, comparacion_sar$Predicho, 
+        xlab = "Valores Observados", ylab = "Valores Predichos", 
+        main = "Comparación Observados vs Predichos (SAR)",
+        pch = 16, col = "blue")
+    abline(0, 1, col = "red", lwd = 2)
+  }
+
+
+
+# Calculo de coeficiente de determinación ========================================
+
+  # Calcular la varianza residual del modelo
+  var_residual <- var(residuals(modelo_sar))
+
+  # Calcular la varianza total de la variable predicha "rate"
+  var_total <- var(ohio_map_data$rate)
+
+  # Calcular el pseudo R^2
+  pseudo_R2 <- 1 - (var_residual / var_total)
+  
+  print(paste("Pseudo R^2:", pseudo_R2))

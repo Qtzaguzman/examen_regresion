@@ -8,6 +8,10 @@
 
 # Cargar librerias =====================================
 
+  # Limpiar memoria del entorno
+  rm(list = ls())
+  cat("\014")
+
   load <- c("gstat", "ggplot2", "dplyr", "tidyr", "spdep", "pls", "caret")
   lapply(load, require, character.only = TRUE)
 

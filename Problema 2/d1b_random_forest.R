@@ -15,6 +15,7 @@
     # Cargar librerias
     load <- c("sf", "sp", "spdep", "ggplot2", "dplyr", "tidyr", "spatialreg", "mgcv", "lmtest", "randomForest", "MASS", "randomForestExplainer")
     lapply(load, require, character.only = TRUE)
+    library(randomForest)
 
     # Establecer el directorio activo
     setwd("~/Projects/examen_regresion/Problema 2")
@@ -32,66 +33,84 @@
     # Calcular tasa de mortalidad por condado
     ohio_data$rate <- ohio_data$y / ohio_data$n
 
-    # Convertir year a factor
-    ohio_data$year <- as.factor(ohio_data$year)
-
     # Visualizar los datos
     head(ohio_data)
     str(ohio_data)
 
 
+# Preparar datos para construcción de mapas ========================================
+    # de tasas de mortalidad por condado
+
+    # Convertir el código del año a un año real
+    activar_year_real = TRUE
+    if (activar_year_real) {
+        ohio_data <- ohio_data %>% 
+            mutate(year = 1967 + year) # Suma 1967 al código para convertir 1 a 1968, 2 a 1969, etc.
+
+        # Convertir year a factor
+        #ohio_data$year <- as.factor(ohio_data$year)
+    }
+
+
+    # Visualizar los datos
+    head(ohio_data)
+
+    # Cargar shapefile
+    ohio_map_org <- st_read("data/shape/tl_2010_39_county00.shp")
+
+    # Visualizar capa de condados
+    ohio_map_org
+
+    # Seleccionar columnas necesarias y renombrar la columna en común
+    ohio_map <- ohio_map_org %>%
+    select("NAME" = "NAME00", geometry) # Selecciona la columna renombrada y 'geometry'
+
+    # Unir los datos con el shapefile usando una columna común
+    ohio_map_data <- ohio_map %>%
+    left_join(ohio_data, by="NAME")
+
+
+
+# Preparacion de datos para el modelo GAM ========================================
+
+    # Convertir geometrías a coordenadas X, Y
+    coords <- st_coordinates(st_centroid(st_geometry(ohio_map_data)))
+    ohio_map_data$X <- coords[, 1]
+    ohio_map_data$Y <- coords[, 2]
+    
+    # Revisar si hay valores faltantes en las columnas relevantes
+    colSums(is.na(ohio_map_data))
+    
+
+
 # Construir modelo Random Forest ========================================
 
-    #Construir el modelo de clasificación con Random Forest
-    rf <- randomForest(Variety ~ ., data = datos, ntree = 50, mtry = 6, importance = TRUE)
-    rf
-
-plot(rf)
-
-table(datos$Variety)
-
-#Importancia de las variables ordenadas
-importance(rf)
-  
-#Importancia de las variables graficadas
-varImpPlot(rf)
-
-datos_pred <- subset(datos, select = -Variety)
-
-#Predecir
-pred <- predict(rf, newdata = datos_pred)
-table(pred, datos$Variety)
-
-
-
-
-
-
-# Asegúrate de que los datos estén preparados adecuadamente
-# Convertir las variables categóricas a factor si es necesario
-ohio_map_data$county <- as.factor(ohio_map_data$county)
-
-# Ajustar el modelo Random Forest
-# rate es la variable de respuesta, las demás son predictoras
-modelo_rf <- randomForest(rate ~ year + n + county, 
+    # Construir el modelo de clasificación con Random Forest
+    modelo_rf <- randomForest(rate ~ X + Y + year + n, 
                           data = ohio_map_data, 
-                          ntree = 500,  # Número de árboles
-                          mtry = 3,    # Número de variables consideradas en cada split
+                          ntree = 500,        # Número de árboles
+                          mtry = 3,           # Número de variables consideradas en cada split
                           importance = TRUE)  # Calcular la importancia de las variables
 
-# Resumen del modelo
-print(modelo_rf)
+    modelo_rf
+    plot(modelo_rf)
 
-# Importancia de las variables
-importance(modelo_rf)
-varImpPlot(modelo_rf)  # Gráfico de importancia de variables
+    # Importancia de las variables del modelo
+    importance(modelo_rf)
+    
+    # Importancia de las variables graficadas
+    varImpPlot(modelo_rf)
 
-# Predicciones con el modelo Random Forest
-predicciones_rf <- predict(modelo_rf, newdata = ohio_map_data)
+    datos_pred <- subset(ohio_map_data, select = -rate)
 
-# Comparación de valores observados vs predichos
-plot(ohio_map_data$rate, predicciones_rf, 
-     xlab = "Valores Observados", ylab = "Valores Predichos", 
-     main = "Comparación Observados vs Predichos (Random Forest)",
-     pch = 16, col = "blue")
-abline(0, 1, col = "red", lwd = 2)  # Línea de referencia y = x
+    # Predicciones con el modelo Random Forest
+    predicciones_rf <- predict(modelo_rf, newdata = ohio_map_data)
+
+    # Comparación de valores observados vs predichos
+    plot(ohio_map_data$rate, predicciones_rf, xlab = "Valores Observados", ylab = "Valores Predichos", 
+    main = "Comparación Observados vs Predichos (Random Forest)", 
+    pch = 16, col = "blue")
+    abline(0, 1, col = "red", lwd = 2)  
+
+    table(predicciones_rf, ohio_map_data$rate)
+

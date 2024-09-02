@@ -1,61 +1,77 @@
-#Cargar librerias
-load_librerias = FALSE
-if (load_librerias == TRUE) {
-  library(gstat)
-  library(ggplot2)
-  library(dplyr)
-  library(tidyr)
-  library(spdep)
-  library(pls)
-  library(caret)
-  library(car)
-  library(glmnet)
-  library(islasso)
-  #install.packages("glmnet")
-  #install.packages("islasso")
-}
+# Información: Modelo LASSO y RIDGE para tasa de mortalidad por condado de cancer de pulmón en Ohio =================================
+    
+  # Estudio de la tendencia del riesgo sobre la mortalidad por cáncer de pulmón en Ohio
+  # Variables respuesta: N_g_m2
+  # Variables predictoras: Wave_500 , …, Wave_2400 
 
-#Establecer el directorio activo
-setwd("~/Home/Codes/Cuatrimestre_02/AnalisisRegresionModerno/Examen")
+  # Definir el tipo de regresión a realizar 1 = LASSO, 0 = RIDGE
+  tipo_regresion <- 0
 
-#Cargar datos
-datos <- read.csv("ely_data/ely_plsr_data.csv")
+  # Definir titulo regresion
+  titulo_regresion <- ifelse(tipo_regresion == 1, "LASSO", "RIDGE")
 
-#Variables respuesta: N_g_m2
-#Variables predictoras: Wave_500 , …, Wave_2400 
+# Cargar librerias =====================================
+    
+  # Limpiar memoria del entorno
+  rm(list = ls())
+  cat("\014")
 
-# Definir las variables de respuesta y predictoras
-Y <- as.matrix(datos[, c("N_g_m2")])                   # Variable respuesta
-X <- as.matrix(datos[, grep("^Wave_", names(datos))])  # Variables predictoras
+  # Cargar librerias
+  load <- c("gstat", "ggplot2", "dplyr", "tidyr", "spdep", "pls", "caret", "car", "glmnet", "islasso")
+  lapply(load, require, character.only = TRUE)
 
-# Ajustar el modelo RIDGE con validación cruzada para seleccionar el valor óptimo de lambda
-set.seed(1)                                            # Asegurar reproducibilidad de los resultados a partir de la misma semilla
-lambda_optimo <- cv.glmnet(X, Y, alpha = 1, nfolds = 10)  # Ajuste con 10-fold cross-validation
+  # Establecer el directorio activo
+  setwd("~/Projects/examen_regresion/Problema 1")
 
-# Obtener el valor óptimo de lambda
-lambda_mejor <- lambda_optimo$lambda.min
-print(paste("Lambda óptimo: ", lambda_mejor))
 
-# Visualizar el resultado de la validación cruzada
-plot(lambda_optimo)
 
-#Visualizar lambdas
-plot(lambda_optimo, xvar = "lambda")
+# Cargar y preparar datos ========================================
 
-# Ajustar el modelo LASSO final usando el lambda óptimo
-modelo_ridge_final <- glmnet(X, Y, alpha = 1, lambda = lambda_mejor)
+  # Cargar datos
+  datos <- read.csv("data/ely_plsr_data.csv")
 
-# Mostrar los coeficientes del modelo final
-print(coef(modelo_ridge_final))
+  # Definir las variables de respuesta y predictoras
+  Y <- as.matrix(datos[, c("N_g_m2")])                   # Variable respuesta
+  X <- as.matrix(datos[, grep("^Wave_", names(datos))])  # Variables predictoras
 
-# Realizar predicciones utilizando el modelo ajustado
-predicciones <- predict(modelo_ridge_final, s = lambda_mejor, newx = X)
-print(predicciones)
+  # Ajustar el modelo LASSO y RIDGE con validación cruzada para seleccionar el valor óptimo de lambda
+  set.seed(1)                                                            # Asegurar reproducibilidad de los resultados a partir de la misma semilla
+  lambda_optimo <- cv.glmnet(X, Y, alpha = tipo_regresion, nfolds = 10)  # Ajuste con 10-fold cross-validation
 
-# Calcular R^2
-r2_ridge <- 1 - sum((Y - predicciones)^2) / sum((Y - mean(Y))^2)
 
-# Mostrar los resultados
-cat("R^2 para RIDGE:", r2_ridge, "\n")
+
+# Analisis de lambda óptimo ========================================
+
+  # Obtener el valor óptimo de lambda
+  lambda_mejor <- lambda_optimo$lambda.min
+  print(paste("Lambda óptimo: ", lambda_mejor))
+
+  # Visualizar el resultado de la validación cruzada
+  plot(lambda_optimo)
+
+
+
+# Ajustar el modelo LASSO y RIDGE final ========================================
+
+  # Ajustar el modelo final usando el lambda óptimo
+  modelo_ridge_final <- glmnet(X, Y, alpha = tipo_regresion, lambda = lambda_mejor)
+  summary(modelo_ridge_final)
+
+  # Mostrar los coeficientes del modelo final
+  print(coef(modelo_ridge_final))
+
+
+
+# Predicciones y evaluación del modelo ========================================
+
+  # Realizar predicciones utilizando el modelo ajustado
+  predicciones <- predict(modelo_ridge_final, s = lambda_mejor, newx = X)
+  print(predicciones)
+
+  # Calcular R^2
+  r2_ridge <- 1 - sum((Y - predicciones)^2) / sum((Y - mean(Y))^2)
+  
+  # Mostrar los resultados
+  cat(paste("Lambda óptimo", titulo_regresion, ": "), r2_ridge, "\n")
 
 

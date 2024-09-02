@@ -15,6 +15,7 @@
   # Cargar librerias
   load <- c("sf", "sp", "spdep", "ggplot2", "dplyr", "tidyr")
   lapply(load, require, character.only = TRUE)
+  library("tidyr")
 
   # Establecer el directorio activo
   setwd("~/Projects/examen_regresion/Problema 2")

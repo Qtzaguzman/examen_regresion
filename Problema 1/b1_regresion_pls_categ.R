@@ -8,6 +8,10 @@
 
 # Cargar librerias =====================================
   
+  # Limpiar memoria del entorno
+  rm(list = ls())
+  cat("\014")
+
   load <- c("gstat", "ggplot2", "dplyr", "tidyr", "spdep", "pls", "caret")
   lapply(load, require, character.only = TRUE)
 
@@ -30,9 +34,6 @@
   #Reclasificar la variable Species_Code a Numeros enteros
   datos$Species_Code <- as.numeric(as.factor(datos$Species_Code))
 
-  # Convertir la variable Species_Code a factor
-  datos$Species_Code <- as.factor(datos$Species_Code)
-
 
 
 # Ajustar modelo PLS ===================================
@@ -41,8 +42,18 @@
   variables <- c("C_N_mass", "C_g_m2", "H20_g_m2", "LMA_g_m2", "N_g_m2")
   Y <- as.matrix(datos[, variables])
 
-  # Definir las variables predictoras incluyendo 'Species_Code'
-  X <- as.matrix(datos[, c("Species_Code", grep("^Wave_", names(datos), value = TRUE))])  
+  # Convertir la variable Species_Code a factor y luego a variables dummy
+  X_categorico <- model.matrix(~ Species_Code - 1, data = datos)
+  
+  # Definir las variables continuas predictoras
+  X_continuo <- as.matrix(datos[, grep("^Wave_", names(datos))])
+  
+  # Combinar las variables continuas con las variables dummy
+  X <- cbind(X_categorico, X_continuo)
+  
+  # Limpieza de valores Nan
+  X <- na.omit(X)
+  Y <- na.omit(Y)
   
   # Ajustar el modelo de regresión PLS considerando 5 componentes y escalando
   modelo_pls <- plsr(Y ~ X, ncomp = 5, scale = TRUE, validation = "CV")
